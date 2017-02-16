@@ -177,7 +177,9 @@ public class DumpToDiskDockerfile {
         StringBuilder stringBuilder = new StringBuilder();
 
         for (int i = 0; i < body.size(); i++) {
-            stringBuilder.append(" ");
+            if(i > 0) {
+                stringBuilder.append(" ");
+            }
 
             ShellCommand currentShellCommand = body.get(i);
 

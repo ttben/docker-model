@@ -14,4 +14,12 @@ public class EXPOSECommand extends Command {
     public List<String> getBody() {
         return body;
     }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("EXPOSECommand{");
+        sb.append("body=").append(body);
+        sb.append('}');
+        return sb.toString();
+    }
 }

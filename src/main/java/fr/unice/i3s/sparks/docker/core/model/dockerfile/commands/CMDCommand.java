@@ -8,7 +8,7 @@ public class CMDCommand extends Command{
 
     private final List<String> body;
 
-    public CMDCommand(String[] body) {
+    public CMDCommand(String... body) {
         this.body = new ArrayList<>(Arrays.asList(body));
     }
 

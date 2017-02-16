@@ -6,7 +6,7 @@ import java.util.List;
 public class DockerCompose {
     private String version;
     private String appName;
-    private List<Service> serviceList = new ArrayList();
+    private List<Service> serviceList = new ArrayList<>();
 
     public DockerCompose(String version, String appName) {
         this.version = version;

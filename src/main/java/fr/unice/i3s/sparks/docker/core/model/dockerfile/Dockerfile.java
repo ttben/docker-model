@@ -11,6 +11,10 @@ import java.util.List;
 public class Dockerfile {
     private List<Command> listOfCommand;
 
+    public Dockerfile(){
+        listOfCommand = new ArrayList<>();
+    }
+
     public Dockerfile(List<Command> listOfCommand) {
 
         this.listOfCommand = listOfCommand;

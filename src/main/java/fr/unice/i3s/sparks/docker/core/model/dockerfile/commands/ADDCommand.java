@@ -5,9 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ADDCommand extends Command {
-    private final List body;
+    private final List<String> body;
 
     public ADDCommand(String... body) {
         this.body = new ArrayList<>(Arrays.asList(body));
+    }
+
+    public List<String> getBody() {
+        return body;
     }
 }

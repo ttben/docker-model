@@ -1,6 +1,5 @@
 package fr.unice.i3s.sparks.docker.core.model.dockerfile.analyser;
 
-import fr.unice.i3s.sparks.docker.core.commands.*;
 import fr.unice.i3s.sparks.docker.core.model.dockerfile.Dockerfile;
 import fr.unice.i3s.sparks.docker.core.model.ImageID;
 import fr.unice.i3s.sparks.docker.core.model.dockerfile.commands.*;

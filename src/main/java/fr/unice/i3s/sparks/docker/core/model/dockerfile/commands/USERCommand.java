@@ -6,4 +6,8 @@ public class USERCommand extends Command {
     public USERCommand(String body) {
         this.body = body;
     }
+
+    public String getBody() {
+        return body;
+    }
 }

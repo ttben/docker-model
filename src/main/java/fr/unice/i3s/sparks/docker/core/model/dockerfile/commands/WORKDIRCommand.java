@@ -6,4 +6,8 @@ public class WORKDIRCommand extends Command {
     public WORKDIRCommand(String body) {
         this.body = body;
     }
+
+    public String getBody() {
+        return body;
+    }
 }

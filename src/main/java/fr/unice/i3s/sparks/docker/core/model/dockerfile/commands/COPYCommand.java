@@ -6,9 +6,13 @@ import java.util.List;
 
 public class COPYCommand extends Command {
 
-    private final List body;
+    private List<String> body = new ArrayList<>();
 
     public COPYCommand(String... body) {
         this.body = new ArrayList<>(Arrays.asList(body));
+    }
+
+    public List<String> getBody() {
+        return body;
     }
 }

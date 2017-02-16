@@ -6,4 +6,8 @@ public class VOLUMECommand extends Command {
     public VOLUMECommand(String body) {
         this.body = body;
     }
+
+    public String getBody() {
+        return body;
+    }
 }

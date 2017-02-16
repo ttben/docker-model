@@ -12,19 +12,12 @@ import java.util.List;
 
 public class DumpToDiskDockerfile {
     public static void dumpToDisk(Dockerfile dockerfileFilePath, Path pathToFile) {
-        StringBuilder stringBuilder = new StringBuilder();
         try {
 
             Files.deleteIfExists(pathToFile);
             Path file = Files.createFile(pathToFile);
 
-            List<Command> listOfCommand = dockerfileFilePath.getListOfCommand();
-            for (Command command : listOfCommand) {
-                Method render = DumpToDiskDockerfile.class.getMethod("render", command.getClass());
-                String result = (String) render.invoke(null, command);
-                stringBuilder.append(result);
-
-            }
+            StringBuilder stringBuilder = getRepresentation(dockerfileFilePath);
 
             PrintWriter printWriter = new PrintWriter(file.toFile());
             printWriter.write(stringBuilder.toString());
@@ -32,6 +25,18 @@ public class DumpToDiskDockerfile {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static StringBuilder getRepresentation(Dockerfile dockerfileFilePath) {
+        StringBuilder stringBuilder = new StringBuilder();
+        List<Command> listOfCommand = dockerfileFilePath.getListOfCommand();
+        try {
+            for (Command command : listOfCommand) {
+                Method render = DumpToDiskDockerfile.class.getMethod("render", command.getClass());
+                String result = (String) render.invoke(null, command);
+                stringBuilder.append(result);
+            }
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -39,6 +44,7 @@ public class DumpToDiskDockerfile {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
+        return stringBuilder;
     }
 
     public static String render(FROMCommand fromCommand) {
@@ -50,10 +56,10 @@ public class DumpToDiskDockerfile {
 
 
         List<String> body = cmdCommand.getBody();
-        for(int i = 0 ; i < body.size() ; i++) {
+        for (int i = 0; i < body.size(); i++) {
             String currentstring = body.get(i);
 
-            if(i > 0) {
+            if (i > 0) {
                 stringBuilder.append(", ");
             }
 
@@ -68,10 +74,10 @@ public class DumpToDiskDockerfile {
 
 
         List<String> body = entryPointCommand.getBody();
-        for(int i = 0 ; i < body.size() ; i++) {
+        for (int i = 0; i < body.size(); i++) {
             String currentstring = body.get(i);
 
-            if(i > 0) {
+            if (i > 0) {
                 stringBuilder.append(", ");
             }
 
@@ -84,12 +90,11 @@ public class DumpToDiskDockerfile {
     public static String render(COPYCommand copyCommand) {
         StringBuilder stringBuilder = new StringBuilder();
 
-
         List<String> body = copyCommand.getBody();
-        for(int i = 0 ; i < body.size() ; i++) {
+        for (int i = 0; i < body.size(); i++) {
             String currentstring = body.get(i);
 
-            if(i > 0) {
+            if (i > 0) {
                 stringBuilder.append(", ");
             }
 
@@ -108,10 +113,10 @@ public class DumpToDiskDockerfile {
 
 
         List<String> body = exposeCommand.getBody();
-        for(int i = 0 ; i < body.size() ; i++) {
+        for (int i = 0; i < body.size(); i++) {
             String currentstring = body.get(i);
 
-            if(i > 0) {
+            if (i > 0) {
                 stringBuilder.append(" ");
             }
 
@@ -126,10 +131,10 @@ public class DumpToDiskDockerfile {
 
 
         List<String> body = addCommand.getBody();
-        for(int i = 0 ; i < body.size() ; i++) {
+        for (int i = 0; i < body.size(); i++) {
             String currentstring = body.get(i);
 
-            if(i > 0) {
+            if (i > 0) {
                 stringBuilder.append(", ");
             }
 
@@ -144,10 +149,10 @@ public class DumpToDiskDockerfile {
 
 
         List<String> body = maintainerCommand.getBody();
-        for(int i = 0 ; i < body.size() ; i++) {
+        for (int i = 0; i < body.size(); i++) {
             String currentstring = body.get(i);
 
-            if(i > 0) {
+            if (i > 0) {
                 stringBuilder.append(", ");
             }
 
@@ -171,22 +176,22 @@ public class DumpToDiskDockerfile {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        for(int i = 0 ; i < body.size() ; i++) {
+        for (int i = 0; i < body.size(); i++) {
             stringBuilder.append(" ");
 
             ShellCommand currentShellCommand = body.get(i);
 
             List<String> currentShellCommandBody = currentShellCommand.getBody();
-            for(String s : currentShellCommandBody) {
+            for (String s : currentShellCommandBody) {
                 stringBuilder.append(" ").append(s);
             }
 
-            if(i != body.size() -1) {
+            if (i != body.size() - 1) {
                 stringBuilder.append("\\\\\n&&");
             }
         }
 
-        return new StringBuilder().append("RUN ").append(stringBuilder).append("\n").toString();
+        return new StringBuilder().append("RUN").append(stringBuilder).append("\n").toString();
     }
 
     public static String render(VOLUMECommand volumeCommand) {

@@ -10,6 +10,7 @@ import java.util.List;
 
 public class Dockerfile {
     private List<Command> listOfCommand;
+    private String sourcefIle;
 
     public Dockerfile(){
         listOfCommand = new ArrayList<>();
@@ -22,6 +23,25 @@ public class Dockerfile {
 
     public Dockerfile(Command... commands) {
         this.listOfCommand = new ArrayList<>(Arrays.asList(commands));
+    }
+
+    public Dockerfile(String absolutePath) {
+        this();
+        sourcefIle = absolutePath;
+    }
+
+    public Dockerfile(List<Command> listOfCommand, String absolutePath) {
+        this(listOfCommand);
+        sourcefIle = absolutePath;
+    }
+
+    public Dockerfile(String absolutePath, Command... commands) {
+        this(commands);
+        sourcefIle = absolutePath;
+    }
+
+    public String getSourcefIle() {
+        return sourcefIle;
     }
 
     public List<Command> getListOfCommand() {
@@ -37,6 +57,13 @@ public class Dockerfile {
         for (Command command : listOfCommand) {
             if (command.getClass().equals(commandClass)) {
                 result++;
+            } else if(command instanceof RUNCommand) {
+                List<ShellCommand> body = ((RUNCommand) command).getBody();
+                for (ShellCommand shellCommand:body) {
+                    if (shellCommand.getClass().equals(commandClass)) {
+                        result++;
+                    }
+                }
             }
         }
 

@@ -43,7 +43,7 @@ public class DockerFileParser {
         Stream<String> fileLines = Files.lines(path);
         ArrayList<String> lines = fileLines.collect(Collectors.toCollection(ArrayList::new));
 
-        Dockerfile result = new Dockerfile();
+        Dockerfile result = new Dockerfile(file.getAbsolutePath());
 
         ListIterator<String> stringListIterator = lines.listIterator();
 
@@ -206,6 +206,7 @@ public class DockerFileParser {
                     if (RUN_END_MULTILINE.matcher(line).matches()) {
                         shellCommands.addAll(buildRunCommand(line, false));
                     }
+                    result.addCommand(new RUNCommand(shellCommands));
                     continue;
                 }
 

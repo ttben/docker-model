@@ -212,8 +212,9 @@ public class DockerFileParser {
                 result.addCommand(new NonParsedCommand(line));
             } catch (NoSuchElementException | IndexOutOfBoundsException e) {
                 //System.err.println("Parse error on file:" + file.getAbsolutePath());
-                result.addCommand(new NonParsedCommand(line));
-
+               //result.addCommand(new NonParsedCommand(line));
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 

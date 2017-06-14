@@ -3,13 +3,13 @@ package fr.unice.i3s.sparks.docker.core.model.dockerfile.commands;
 import java.util.Arrays;
 import java.util.List;
 
-public class Install extends ShellCommand {
+public class PipInstall extends ShellCommand {
 
-    public Install(List<String> body) {
+    public PipInstall(List<String> body) {
         super(body);
     }
 
-    public Install(String... body) {
+    public PipInstall(String... body) {
         super(Arrays.asList(body));
     }
 }

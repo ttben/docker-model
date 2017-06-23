@@ -1,0 +1,88 @@
+#  Dockerfile retrieved from:
+#    Dockerfile: http://raw.githubusercontent.com/allanchau/docker-alpine-rabbitmq/f52252c56f1121842b0221108b40071cb57b20b6/src/Dockerfile
+FROM allanchau/alpine-base:3.5.0
+
+ENV DUMB_INIT_VERSION 1.2.0
+ENV RABBITMQ_VERSION 3.6.9
+
+ENV RABBITMQ_LOGS=- RABBITMQ_SASL_LOGS=-
+ENV RABBITMQ_HOME /opt/rabbitmq
+ENV PATH $RABBITMQ_HOME/sbin:$PATH
+ENV HOME /var/lib/rabbitmq
+
+RUN set -ex \
+
+  # Add our user and group first to make sure their IDs get assigned consistently.
+  && addgroup -S rabbitmq \
+  && adduser -S -h /var/lib/rabbitmq -G rabbitmq rabbitmq \
+
+  # Add required packages.
+  && apk add --no-cache \
+    'su-exec>=0.2' \
+    bash \
+    erlang \
+    erlang-asn1 \
+    erlang-crypto \
+    erlang-eldap \
+    erlang-hipe \
+    erlang-inets \
+    erlang-mnesia \
+    erlang-os-mon \
+    erlang-public-key \
+    erlang-sasl \
+    erlang-ssl \
+    erlang-syntax-tools \
+    erlang-xmerl \
+  && apk add --no-cache --virtual \
+    .build-deps \
+    ca-certificates \
+    gnupg \
+    libressl \
+    tar \
+    xz \
+
+  # Install dumb-init.
+  # https://github.com/Yelp/dumb-init
+  && wget -O /usr/local/bin/dumb-init "https://github.com/Yelp/dumb-init/releases/download/v${DUMB_INIT_VERSION}/dumb-init_${DUMB_INIT_VERSION}_amd64" \
+  && chmod +x /usr/local/bin/dumb-init \
+
+  # Download.
+  && wget -O rabbitmq-server.tar.xz "https://www.rabbitmq.com/releases/rabbitmq-server/v${RABBITMQ_VERSION}/rabbitmq-server-generic-unix-${RABBITMQ_VERSION}.tar.xz" \
+  && wget -O rabbitmq-server.tar.xz.asc "https://www.rabbitmq.com/releases/rabbitmq-server/v${RABBITMQ_VERSION}/rabbitmq-server-generic-unix-${RABBITMQ_VERSION}.tar.xz.asc" \
+
+  # Add GPG keys and verify.
+  && export GNUPGHOME="$(mktemp -d)" \
+  && gpg --keyserver ha.pool.sks-keyservers.net --recv-keys \
+    0A9AF2115F4687BD29803A206B73A36E6026DFCA \
+  && gpg --batch --verify rabbitmq-server.tar.xz.asc rabbitmq-server.tar.xz \
+  && rm -r "$GNUPGHOME" rabbitmq-server.tar.xz.asc \
+
+  # Install.
+  && mkdir -p "$RABBITMQ_HOME" \
+  && tar --extract --verbose --file rabbitmq-server.tar.xz --directory "$RABBITMQ_HOME" --strip-components 1 \
+  && rm rabbitmq-server.tar.xz \
+  && grep -qE '^SYS_PREFIX=\$\{RABBITMQ_HOME\}$' "$RABBITMQ_HOME/sbin/rabbitmq-defaults" \
+  && sed -ri 's!^(SYS_PREFIX=).*$!\1!g' "$RABBITMQ_HOME/sbin/rabbitmq-defaults" \
+  && grep -qE '^SYS_PREFIX=$' "$RABBITMQ_HOME/sbin/rabbitmq-defaults" \
+
+  # Post-install setup.
+  && mkdir -p /var/lib/rabbitmq /etc/rabbitmq \
+	&& echo '[ { rabbit, [ { loopback_users, [ ] } ] } ].' > /etc/rabbitmq/rabbitmq.config \
+	&& chown -R rabbitmq:rabbitmq /var/lib/rabbitmq /etc/rabbitmq \
+	&& chmod -R 777 /var/lib/rabbitmq /etc/rabbitmq \
+  && ln -sf /var/lib/rabbitmq/.erlang.cookie /root/ \
+  && ln -sf "$RABBITMQ_HOME/plugins" /plugins \
+
+  # Cleanup packages.
+  && apk del \
+    .build-deps
+
+VOLUME /var/lib/rabbitmq
+
+# Create entrypoint.
+COPY docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["dumb-init", "--", "docker-entrypoint.sh"]
+
+# Start container.
+EXPOSE 4369 5671 5672 25672
+CMD ["rabbitmq-server"]

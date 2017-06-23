@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,7 +42,8 @@ public class DockerFileParser {
     public static Dockerfile parse(File file) throws IOException {
         Path path = Paths.get(file.getAbsolutePath());
         Stream<String> fileLines = Files.lines(path);
-        ArrayList<String> lines = fileLines.collect(Collectors.toCollection(ArrayList::new));
+        Collector<String, ?, ArrayList<String>> stringArrayListCollector = Collectors.toCollection(ArrayList::new);
+        ArrayList<String> lines = fileLines.collect(stringArrayListCollector);
 
         Dockerfile result = new Dockerfile(file.getAbsolutePath());
 

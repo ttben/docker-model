@@ -1,0 +1,7 @@
+ENV myName="John Doe" myDog=Rex\ The\ Dog \
+    myCat=fluffy
+
+ENV myName John Doe
+ENV myDog Rex The Dog
+ENV myCat fluffy
+

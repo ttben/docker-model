@@ -52,6 +52,10 @@ public class Dockerfile {
         this.listOfCommand.add(command);
     }
 
+    public void addCommands(List<Command> commands) {
+        this.listOfCommand.addAll(commands);
+    }
+
     public int howMuch(Class<? extends Command> commandClass) {
         int result = 0;
         for (Command command : listOfCommand) {

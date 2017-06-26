@@ -1,7 +1,7 @@
 package fr.unice.i3s.sparks.docker.core.model.dockerfile.analyser;
 
-import fr.unice.i3s.sparks.docker.core.model.dockerfile.Dockerfile;
 import fr.unice.i3s.sparks.docker.core.model.ImageID;
+import fr.unice.i3s.sparks.docker.core.model.dockerfile.Dockerfile;
 import fr.unice.i3s.sparks.docker.core.model.dockerfile.commands.*;
 
 import java.io.File;
@@ -21,7 +21,10 @@ public class DockerFileParser {
     public static final Pattern FROM_PATTERN = Pattern.compile("[fF][rR][oO][mM](\\s)+[^\\n\\s]+");
 
     //public static final Pattern ENV_PATTERN = Pattern.compile("[eE][nN][vV](\\s)+[^\\s]+(\\s)*[^\\s]+");
-    public static final Pattern ENV_PATTERN = Pattern.compile("[eE][nN][vV](\\s)+.+");
+    public static final Pattern ENV_PATTERN = Pattern.compile("[eE][nN][vV](\\s)+[^\\\\]+");
+    public static final Pattern ENV_PATTERN_MULTILINE = Pattern.compile("[eE][nN][vV](\\s)+.*(\\\\)+\\s*");
+    public static final Pattern ENV_AGAIN_MULTILINE = Pattern.compile(".*(\\\\)+\\s*");
+    public static final Pattern ENV_END_MULTILINE = Pattern.compile("[^\\\\]*");
 
     public static final Pattern CMD_PATTERN = Pattern.compile("[cC][mM][dD](\\s)+(.)+");
     public static final Pattern CMD_PATTERN_MUTLILINE = Pattern.compile("[cC][mM][dD](\\s)+.*(\\\\)+\\s*");
@@ -41,7 +44,11 @@ public class DockerFileParser {
     public static final Pattern USER_PATTERN = Pattern.compile("[uU][sS][eE][rR](\\s)+(.)+");
     public static final Pattern ONBUILD_PATTERN = Pattern.compile("[oO][nN][bB][uU][iI][lL][dD](\\s)+(.)+");
     public static final Pattern ARG_PATTERN = Pattern.compile("[aA][rR][gG](\\s)+(.)+");
+
     public static final Pattern LABEL_PATTERN = Pattern.compile("[lL][aA][bB][eE][lL](\\s)+(.)+");
+    public static final Pattern LABEL_PATTERN_MUTLILINE = Pattern.compile("[lL][aA][bB][eE][lL](\\s)+.*(\\\\)+\\s*");
+    public static final Pattern LABEL_AGAIN_MULTILINE = Pattern.compile(".*(\\\\)+\\s*");
+    public static final Pattern LABEL_END_MULTILINE = Pattern.compile("[^\\\\]*");
 
     public static final Pattern RUN_PATTERN_ONELINE = Pattern.compile("[rR][uU][nN](\\s)+.*[^\\\\]");
     public static final Pattern RUN_PATTERN_MUTLILINE = Pattern.compile("[rR][uU][nN](\\s)+.*(\\\\)+\\s*");
@@ -49,7 +56,7 @@ public class DockerFileParser {
     public static final Pattern RUN_END_MULTILINE = Pattern.compile("[^\\\\]*");
 
     public static Dockerfile parse(File file) throws IOException {
-        System.err.println("Handling file:"+ file.getAbsolutePath());
+        System.err.println("Handling file:" + file.getAbsolutePath());
         Path path = Paths.get(file.getAbsolutePath());
         Stream<String> fileLines = Files.lines(path);
         Collector<String, ?, ArrayList<String>> stringArrayListCollector = Collectors.toCollection(ArrayList::new);
@@ -126,47 +133,33 @@ public class DockerFileParser {
                 }
 
                 if (ENV_PATTERN.matcher(line).matches()) {
-                    String[] split = line.split(" ");
-
-                    String[] body = (String[]) Arrays.copyOfRange(split, 1, split.length);
-
-
-                    String descBody = "";
-
-                    for (String s : body) {
-                        descBody += s;
-                    }
-
-                    String key, value;
-
-                    // ENV a=b
-                    if (body.length == 1 && descBody.contains("=")) {
-                        body = descBody.split("=");
-                        key = body[0];
-                        value = body[1];
-                    } else if (body.length > 1 && !descBody.contains("=")) {
-                        key = body[0];
-                        value = "";
-                    } else {
-                        key = body[0];
-                        value = body[1];
-                    }
-
-                    ENVCommand envCommand = new ENVCommand(key, value);
-                    result.addCommand(envCommand);
+                    List<Command> envCommand = buildENVCommand(line);
+                    result.addCommands(envCommand);
                     continue;
                 }
 
-                if (CMD_PATTERN.matcher(line).matches()) {
-                    String[] split = line.split(" ");
 
-                    String[] body = (String[]) Arrays.copyOfRange(split, 1, split.length);
+                if (ENV_PATTERN_MULTILINE.matcher(line).matches()) {
+                    List<EnvKeyValue> keyValuePairs = buildMultiLinesEnvCommand(line, true);
+                    line = stringListIterator.next();
 
-                    CMDCommand cmdCommand = new CMDCommand(body);
-                    result.addCommand(cmdCommand);
+                    while (ENV_AGAIN_MULTILINE.matcher(line).matches() || line.trim().isEmpty() || line.trim().startsWith("#")) {
+                        if (line.trim().isEmpty() || line.trim().startsWith("#")) {
+                            line = stringListIterator.next();
+                            continue;
+                        }
+                        keyValuePairs.addAll(buildMultiLinesEnvCommand(line, false));
+                        line = stringListIterator.next();
+                    }
+
+                    if (ENV_END_MULTILINE.matcher(line).matches()) {
+                        keyValuePairs.addAll(buildMultiLinesEnvCommand(line, false));
+                    }
+                    result.addCommand(new ENVCommand(keyValuePairs));
                     continue;
                 }
 
+                /*
                 if (CMD_PATTERN_MUTLILINE.matcher(line).matches()) {
                     List<String> body = new ArrayList<>();
                     body.add(line);
@@ -184,7 +177,38 @@ public class DockerFileParser {
                     result.addCommand(new CMDCommand((String[]) body.toArray()));
                     continue;
                 }
+                */
 
+                //  Fixme/todo must be handled as RUNCommand (replace ShellCommand?)
+                if (CMD_PATTERN_MUTLILINE.matcher(line).matches()) {
+                    String body = line;
+
+                    while (CMD_AGAIN_MULTILINE.matcher(line).matches() || line.trim().isEmpty() || line.trim().startsWith("#")) {
+                        if (line.trim().isEmpty() || line.trim().startsWith("#")) {
+                            line = stringListIterator.next();
+                            continue;
+                        }
+                        body += " " + line;
+                        line = stringListIterator.next();
+                    }
+
+                    if (CMD_END_MULTILINE.matcher(line).matches()) {
+                        body += " " + line;
+                    }
+                    result.addCommand(new CMDCommand(body));
+                    continue;
+                }
+
+
+                if (CMD_PATTERN.matcher(line).matches()) {
+                    String[] split = line.split(" ");
+
+                    String[] body = (String[]) Arrays.copyOfRange(split, 1, split.length);
+
+                    CMDCommand cmdCommand = new CMDCommand(body);
+                    result.addCommand(cmdCommand);
+                    continue;
+                }
 
                 if (ADD_PATTERN.matcher(line).matches()) {
                     String[] split = line.split(" ");
@@ -246,6 +270,27 @@ public class DockerFileParser {
                     continue;
                 }
 
+
+                if (LABEL_PATTERN_MUTLILINE.matcher(line).matches()) {
+                    String body = line;
+
+                    while (LABEL_AGAIN_MULTILINE.matcher(line).matches() || line.trim().isEmpty() || line.trim().startsWith("#")) {
+                        if (line.trim().isEmpty() || line.trim().startsWith("#")) {
+                            line = stringListIterator.next();
+                            continue;
+                        }
+                        body += " " + line;
+                        line = stringListIterator.next();
+                    }
+
+                    if (LABEL_END_MULTILINE.matcher(line).matches()) {
+                        body += " " + line;
+                    }
+                    result.addCommand(new LABELCommand(body));
+                    continue;
+                }
+
+
                 if (LABEL_PATTERN.matcher(line).matches()) {
                     String[] split = line.split(" ");
 
@@ -261,6 +306,10 @@ public class DockerFileParser {
                     line = stringListIterator.next();
 
                     while (RUN_AGAIN_MULTILINE.matcher(line).matches() || line.trim().isEmpty() || line.trim().startsWith("#")) {
+                        if (line.trim().isEmpty() || line.trim().startsWith("#")) {
+                            line = stringListIterator.next();
+                            continue;
+                        }
                         shellCommands.addAll(buildRunCommand(line, false));
                         line = stringListIterator.next();
                     }
@@ -282,6 +331,7 @@ public class DockerFileParser {
 
                 result.addCommand(new NonParsedCommand(line));
             } catch (NoSuchElementException | IndexOutOfBoundsException e) {
+                e.printStackTrace();
                 //System.err.println("Parse error on file:" + file.getAbsolutePath());
                 //result.addCommand(new NonParsedCommand(line));
             } catch (Exception e) {
@@ -290,7 +340,107 @@ public class DockerFileParser {
         }
     }
 
+
+
+    private static List<EnvKeyValue> buildMultiLinesEnvCommand(String line, boolean isFirstLineOfEnv) {
+        line = line.trim();
+
+        if (isFirstLineOfEnv) {
+            //  Delete env command
+            line = line.substring(3, line.length());
+            line = line.trim();
+        }
+
+        if (line.endsWith("\\")) {
+            //  Delete '\' suffix
+            line = line.substring(0, line.length() - 1);
+            line = line.trim();
+        }
+
+        List<EnvKeyValue> envKeyValues = new ArrayList<>();
+
+        char[] charArray = line.toCharArray();
+        int index = 0;
+
+
+        ENVAutomata envAutomata = new ENVAutomata();
+        envAutomata.handle(charArray, 0);
+        envKeyValues = envAutomata.getEnvKeyValues();
+
+        return envKeyValues;
+    }
+
+    private static void extractKeyValue( char[] charArray, int index) {
+        List<EnvKeyValue> envKeyValues = new ArrayList<>();
+        while(index < charArray.length) {
+
+            List<Character> key = new ArrayList<>();
+            List<Character> value = new ArrayList<>();
+
+            while (charArray[index] != '=' && (Character.isLetter(charArray[index]) || Character.isDigit(charArray[index]))) {
+                key.add(charArray[index]);
+                index++;
+            }
+
+            index++;
+
+            if (charArray[index] == '"') {
+
+            } else {
+                while (charArray[index] != '=' && (Character.isLetter(charArray[index]) || Character.isDigit(charArray[index]))) {
+                    value.add(charArray[index]);
+                    if(index != charArray.length-1) {
+                        index++;
+                    }
+                }
+
+                envKeyValues.add(new EnvKeyValue(key.toString(), value.toString()));
+                index++;
+            }
+        }
+
+        System.out.println(envKeyValues);
+    }
+
+    private static List<Command> buildENVCommand(String line) {
+        line = line.trim();
+
+
+        if (line.toLowerCase().startsWith("env")) {
+            //  Delete env command
+            line = line.substring(3, line.length());
+            line = line.trim();
+        }
+
+        if (line.endsWith("\\")) {
+            //  Delete '\' suffix
+            line = line.substring(0, line.length() - 1);
+            line = line.trim();
+        }
+
+
+        String[] body = line.split(" ");
+
+        String key, value = "";
+
+        List<Command> result = new ArrayList<>();
+
+        key = body[0];
+        for(int i = 1 ; i < body.length ; i++) {
+            if(i != 1) {
+                value += " ";
+            }
+            value += body[i];
+        }
+
+
+        result.add(new ENVCommand(Arrays.asList(new EnvKeyValue(key, value))));
+
+        return result;
+    }
+
     private static List<ShellCommand> buildRunCommand(String line, boolean isFirstLineOfRun) {
+        line = line.trim();
         String[] split = line.split("&&");
 
         if (isFirstLineOfRun) {
@@ -308,86 +458,7 @@ public class DockerFileParser {
     }
 
     public static void main(String[] args) {
-
-        Matcher m = ENV_PATTERN.matcher("ENV PATH=PATH");
-
-        m = ENV_PATTERN.matcher("ENV PATH :PATH");
-
-        /*
-        String s = "FROM haskell:7.8.4\n" +
-                "\n" +
-                "RUN apt-get update && \\\n" +
-                "    apt-get install -y --no-install-recommends libpq5 libpq-dev &&\\\n" +
-                "    apt-get clean\n" +
-                "\n";
-        Matcher m = RUN_PATTERN_ONELINE.matcher(s);
-        System.out.println(m.matches());
-
-        m = RUN_PATTERN_MUTLILINE.matcher(s);
-        System.out.println(m.matches());
-
-
-        System.out.println("↓FALSE↓");
-        Matcher m = RUN_PATTERN_ONELINE.matcher("RUN ");
-        System.out.println(m.matches());
-
-        m = RUN_PATTERN_ONELINE.matcher("RUNe apt-get update && install -y");
-        System.out.println(m.matches());
-
-        m = RUN_PATTERN_ONELINE.matcher("RUNq apt-get update \\\n && install -y");
-        System.out.println(m.matches());
-
-        System.out.println("↓TRUE↓");
-
-        m = RUN_PATTERN_ONELINE.matcher("RUN apt-get update && install -y");
-        System.out.println(m.matches());
-
-        m = RUN_PATTERN_MUTLILINE.matcher("RUN apt-get update sgfsgsv.,l gy deguyhdb afgq==t356=-0=-fgv dsfb\\\n");
-        System.out.println(m.matches());
-
-
-        System.out.println("↓FALSE↓");
-        m = FROM_PATTERN.matcher("FROM");
-        System.out.println(m.matches());
-
-        m = FROM_PATTERN.matcher("FROM ");
-        System.out.println(m.matches());
-
-        m = FROM_PATTERN.matcher("FROM  ");
-        System.out.println(m.matches());
-
-        m = FROM_PATTERN.matcher("FROM   ");
-        System.out.println(m.matches());
-
-        System.out.println("↓TRUE↓");
-
-        m = FROM_PATTERN.matcher("FROM a:a");
-        System.out.println(m.matches());
-
-        m = FROM_PATTERN.matcher("FROM a/a");
-        System.out.println(m.matches());
-
-        System.out.println("↓FALSE↓");
-
-        m = ENV_PATTERN.matcher("ENV");
-        System.out.println(m.matches());
-
-        m = ENV_PATTERN.matcher("ENV ");
-        System.out.println(m.matches());
-
-        m = ENV_PATTERN.matcher("ENV  ");
-        System.out.println(m.matches());
-
-        m = ENV_PATTERN.matcher("ENV   ");
-        System.out.println(m.matches());
-
-        System.out.println("↓TRUE↓");
-
-        m = ENV_PATTERN.matcher("ENV a a");
-        System.out.println(m.matches());
-
-        m = ENV_PATTERN.matcher("ENV a=a");
-        System.out.println(m.matches());
-        */
+        List<EnvKeyValue> envKeyValues = DockerFileParser.buildMultiLinesEnvCommand("ENV a=aq2 b=s\\", true);
+        System.out.println(envKeyValues);
     }
 }

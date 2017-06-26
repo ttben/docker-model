@@ -1,27 +1,28 @@
 package fr.unice.i3s.sparks.docker.core.model.dockerfile.commands;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ENVCommand extends Command {
-    private String key;
-    private String value;
+    private List<EnvKeyValue> envKeyValues = new ArrayList<>();
 
     public ENVCommand(String key, String value) {
-        this.key = key;
-        this.value = value;
+        this.envKeyValues.add(new EnvKeyValue(key, value));
     }
 
-    public String getKey() {
-        return key;
+    public ENVCommand(List<EnvKeyValue> envKeyValues) {
+        this.envKeyValues = envKeyValues;
     }
 
-    public String getValue() {
-        return value;
+    public List<EnvKeyValue> getEnvKeyValues() {
+        return envKeyValues;
     }
 
     @Override
     public String toString() {
-        return "ENVCommand{" +
-                "key='" + key + '\'' +
-                ", value='" + value + '\'' +
-                '}';
+        final StringBuffer sb = new StringBuffer("ENVCommand{");
+        sb.append("envKeyValues=").append(envKeyValues);
+        sb.append('}');
+        return sb.toString();
     }
 }

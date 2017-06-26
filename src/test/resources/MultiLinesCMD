@@ -1,0 +1,6 @@
+CMD sudo apt-get update -y && \
+sudo apt-get upgrade jenkins -y && \
+mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${EFS_URL}:/ lamsa-efs && \
+mount --bind --verbose /lamsa-efs/debian/jenkins_home /var/lib/jenkins && \
+mount --bind --verbose /lamsa-efs/debian/cache/jenkins /var/cache/jenkins && \
+sudo service apache2 start && sudo service jenkins start && tail -f /var/log/apache2/error.log

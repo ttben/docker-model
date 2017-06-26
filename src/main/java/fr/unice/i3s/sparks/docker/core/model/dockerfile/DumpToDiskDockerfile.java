@@ -105,7 +105,7 @@ public class DumpToDiskDockerfile {
     }
 
     public static String render(ENVCommand envCommand) {
-        return new StringBuilder().append("ENV ").append(envCommand.getKey()).append(" ").append(envCommand.getKey()).append("\n").toString();
+        return new StringBuilder().append("ENV ").append("TODOFIXE").append("\n").toString();
     }
 
     public static String render(EXPOSECommand exposeCommand) {

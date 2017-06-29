@@ -1,4 +1,4 @@
-package fr.unice.i3s.sparks.docker.core.model.dockerfile.analyser;
+package fr.unice.i3s.sparks.docker.core.model.dockerfile.parser;
 
 import fr.unice.i3s.sparks.docker.core.model.dockerfile.Dockerfile;
 import fr.unice.i3s.sparks.docker.core.model.dockerfile.commands.*;

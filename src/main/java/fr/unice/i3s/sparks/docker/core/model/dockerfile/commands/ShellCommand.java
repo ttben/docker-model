@@ -25,9 +25,6 @@ public class ShellCommand extends Command {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("ShellCommand{");
-        sb.append("body=").append(body);
-        sb.append('}');
-        return sb.toString();
+        return body.toString();
     }
 }

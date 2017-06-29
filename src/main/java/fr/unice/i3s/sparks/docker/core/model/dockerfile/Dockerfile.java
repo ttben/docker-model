@@ -48,6 +48,18 @@ public class Dockerfile {
         return listOfCommand;
     }
 
+    public <T extends Command> List<T> getCommandsOfType(Class<T> clazz) {
+        List<T> lol = new ArrayList<>();
+
+        for (Command c : listOfCommand) {
+            if (c.getClass().equals(clazz)) {
+                lol.add((T) c);
+            }
+        }
+
+        return lol;
+    }
+
     public void addCommand(Command command) {
         this.listOfCommand.add(command);
     }

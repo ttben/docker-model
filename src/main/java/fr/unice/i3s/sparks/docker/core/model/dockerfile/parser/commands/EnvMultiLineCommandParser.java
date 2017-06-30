@@ -52,11 +52,15 @@ public class EnvMultiLineCommandParser implements CommandParser {
             line = line.trim();
         }
 
+
         List<EnvKeyValue> envKeyValues = new ArrayList<>();
 
-        char[] charArray = line.toCharArray();
-        int index = 0;
+        //  Can happened with 'ENV \'
+        if (line.isEmpty()) {
+            return envKeyValues;
+        }
 
+        char[] charArray = line.toCharArray();
 
         ENVAutomata envAutomata = new ENVAutomata();
         envAutomata.handle(charArray, 0);

@@ -132,6 +132,22 @@ public class DockerFileParserTest {
     }
 
     @Test
+    public void realLifeEnv1() throws IOException {
+        File f = new File(DockerFileParserTest.class.getClassLoader().getResource("RealLifeEnv1").getPath());
+        Dockerfile result = DockerFileParser.parse(f);
+        assertEquals(9, result.getActions().size());
+        assertEquals(1, result.howMuch(FROMCommand.class));
+        assertEquals(1, result.howMuch(MAINTAINERCommand.class));
+        assertEquals(1, result.howMuch(ARGCommand.class));
+        assertEquals(1, result.howMuch(COPYCommand.class));
+        assertEquals(1, result.howMuch(ENVCommand.class));
+        assertEquals(1, result.howMuch(RUNCommand.class));
+        assertEquals(1, result.howMuch(WORKDIRCommand.class));
+        assertEquals(1, result.howMuch(CMDCommand.class));
+        assertEquals(1, result.howMuch(ONBUILDCommand.class));
+    }
+
+    @Test
     public void multilinesCMDCommand() throws IOException {
         File f = new File(DockerFileParserTest.class.getClassLoader().getResource("MultiLinesCMD").getPath());
         Dockerfile result = DockerFileParser.parse(f);

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class RUNCommand extends Command {
+public class RUNCommand extends CompositeCommand {
 
     private List<ShellCommand> body = new ArrayList<>();
 

@@ -30,7 +30,7 @@ public class DumpToDiskDockerfile {
 
     public static StringBuilder getRepresentation(Dockerfile dockerfileFilePath) {
         StringBuilder stringBuilder = new StringBuilder();
-        List<Command> listOfCommand = dockerfileFilePath.getListOfCommand();
+        List<Command> listOfCommand = dockerfileFilePath.getActions();
         try {
             for (Command command : listOfCommand) {
                 Method render = DumpToDiskDockerfile.class.getMethod("render", command.getClass());

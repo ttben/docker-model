@@ -55,7 +55,7 @@ public class DockerFileParser {
 
             CommandParser dispatch = CommandParserDispatcher.dispatch(line);
             Command parse = dispatch.parse(stringListIterator, line);
-            result.addCommand(parse);
+            result.add(parse);
         }
     }
 }

@@ -22,9 +22,9 @@ public class DockerFileParserTest {
 
         DockerFileParser.parseLines(strings, result);
 
-        assertFalse(result.getListOfCommand().isEmpty());
-        assertEquals(RUNCommand.class, result.getListOfCommand().get(0).getClass());
-        assertEquals(1, result.getListOfCommand().size());
+        assertFalse(result.getActions().isEmpty());
+        assertEquals(RUNCommand.class, result.getActions().get(0).getClass());
+        assertEquals(1, result.getActions().size());
     }
 
     @Test
@@ -34,8 +34,8 @@ public class DockerFileParserTest {
 
         DockerFileParser.parseLines(strings, result);
 
-        assertEquals(1, result.getListOfCommand().size());
-        assertEquals(RUNCommand.class, result.getListOfCommand().get(0).getClass());
+        assertEquals(1, result.getActions().size());
+        assertEquals(RUNCommand.class, result.getActions().get(0).getClass());
     }
 
     @Test
@@ -45,9 +45,9 @@ public class DockerFileParserTest {
 
         DockerFileParser.parseLines(strings, result);
 
-        assertFalse(result.getListOfCommand().isEmpty());
-        assertEquals(RUNCommand.class, result.getListOfCommand().get(0).getClass());
-        assertEquals(1, result.getListOfCommand().size());
+        assertFalse(result.getActions().isEmpty());
+        assertEquals(RUNCommand.class, result.getActions().get(0).getClass());
+        assertEquals(1, result.getActions().size());
     }
 
     @Test
@@ -57,8 +57,8 @@ public class DockerFileParserTest {
 
         DockerFileParser.parseLines(strings, result);
 
-        assertEquals(1, result.getListOfCommand().size());
-        assertEquals(RUNCommand.class, result.getListOfCommand().get(0).getClass());
+        assertEquals(1, result.getActions().size());
+        assertEquals(RUNCommand.class, result.getActions().get(0).getClass());
     }
 
     @Test
@@ -66,10 +66,10 @@ public class DockerFileParserTest {
         File f = new File(DockerFileParserTest.class.getClassLoader().getResource("Dockerfiletest").getPath());
         Dockerfile result = DockerFileParser.parse(f);
 
-        assertEquals(3, result.getListOfCommand().size());
-        assertEquals(FROMCommand.class, result.getListOfCommand().get(0).getClass());
-        assertEquals(RUNCommand.class, result.getListOfCommand().get(1).getClass());
-        assertEquals(WORKDIRCommand.class, result.getListOfCommand().get(2).getClass());
+        assertEquals(3, result.getActions().size());
+        assertEquals(FROMCommand.class, result.getActions().get(0).getClass());
+        assertEquals(RUNCommand.class, result.getActions().get(1).getClass());
+        assertEquals(WORKDIRCommand.class, result.getActions().get(2).getClass());
     }
 
     @Test
@@ -77,11 +77,11 @@ public class DockerFileParserTest {
         File f = new File(DockerFileParserTest.class.getClassLoader().getResource("ComplexMutliRunWithWS").getPath());
         Dockerfile result = DockerFileParser.parse(f);
 
-        assertEquals(4, result.getListOfCommand().size());
-        assertEquals(FROMCommand.class, result.getListOfCommand().get(0).getClass());
-        assertEquals(RUNCommand.class, result.getListOfCommand().get(1).getClass());
-        assertEquals(RUNCommand.class, result.getListOfCommand().get(2).getClass());
-        assertEquals(RUNCommand.class, result.getListOfCommand().get(3).getClass());
+        assertEquals(4, result.getActions().size());
+        assertEquals(FROMCommand.class, result.getActions().get(0).getClass());
+        assertEquals(RUNCommand.class, result.getActions().get(1).getClass());
+        assertEquals(RUNCommand.class, result.getActions().get(2).getClass());
+        assertEquals(RUNCommand.class, result.getActions().get(3).getClass());
     }
 
     @Test
@@ -89,7 +89,7 @@ public class DockerFileParserTest {
         File f = new File(DockerFileParserTest.class.getClassLoader().getResource("ComplexMutliRunWithEmptyLines").getPath());
         Dockerfile result = DockerFileParser.parse(f);
 
-        assertEquals(13, result.getListOfCommand().size());
+        assertEquals(13, result.getActions().size());
     }
 
     @Test
@@ -97,7 +97,7 @@ public class DockerFileParserTest {
         File f = new File(DockerFileParserTest.class.getClassLoader().getResource("MultilinesENVCommand").getPath());
         Dockerfile result = DockerFileParser.parse(f);
 
-        assertEquals(10, result.getListOfCommand().size());
+        assertEquals(10, result.getActions().size());
         assertEquals(1, result.howMuch(FROMCommand.class));
         assertEquals(1, result.howMuch(ENVCommand.class));
         assertEquals(3, result.howMuch(RUNCommand.class));
@@ -113,22 +113,22 @@ public class DockerFileParserTest {
         File f = new File(DockerFileParserTest.class.getClassLoader().getResource("EnvDKFRef").getPath());
         Dockerfile result = DockerFileParser.parse(f);
 
-        assertEquals(4, result.getListOfCommand().size());
+        assertEquals(4, result.getActions().size());
         assertEquals(4, result.howMuch(ENVCommand.class));
 
-        assertEquals("myName", ((ENVCommand) result.getListOfCommand().get(0)).getEnvKeyValues().get(0).getKey());
-        assertEquals("myDog", ((ENVCommand) result.getListOfCommand().get(0)).getEnvKeyValues().get(1).getKey());
-        assertEquals("myCat", ((ENVCommand) result.getListOfCommand().get(0)).getEnvKeyValues().get(2).getKey());
-        assertEquals("myName", ((ENVCommand) result.getListOfCommand().get(1)).getEnvKeyValues().get(0).getKey());
-        assertEquals("myDog", ((ENVCommand) result.getListOfCommand().get(2)).getEnvKeyValues().get(0).getKey());
-        assertEquals("myCat", ((ENVCommand) result.getListOfCommand().get(3)).getEnvKeyValues().get(0).getKey());
+        assertEquals("myName", ((ENVCommand) result.getActions().get(0)).getEnvKeyValues().get(0).getKey());
+        assertEquals("myDog", ((ENVCommand) result.getActions().get(0)).getEnvKeyValues().get(1).getKey());
+        assertEquals("myCat", ((ENVCommand) result.getActions().get(0)).getEnvKeyValues().get(2).getKey());
+        assertEquals("myName", ((ENVCommand) result.getActions().get(1)).getEnvKeyValues().get(0).getKey());
+        assertEquals("myDog", ((ENVCommand) result.getActions().get(2)).getEnvKeyValues().get(0).getKey());
+        assertEquals("myCat", ((ENVCommand) result.getActions().get(3)).getEnvKeyValues().get(0).getKey());
 
-        assertEquals("John Doe", ((ENVCommand) result.getListOfCommand().get(0)).getEnvKeyValues().get(0).getValue());
-        assertEquals("Rex\\ The\\ Dog", ((ENVCommand) result.getListOfCommand().get(0)).getEnvKeyValues().get(1).getValue());
-        assertEquals("fluffy", ((ENVCommand) result.getListOfCommand().get(0)).getEnvKeyValues().get(2).getValue());
-        assertEquals("John Doe", ((ENVCommand) result.getListOfCommand().get(1)).getEnvKeyValues().get(0).getValue());
-        assertEquals("Rex The Dog", ((ENVCommand) result.getListOfCommand().get(2)).getEnvKeyValues().get(0).getValue());
-        assertEquals("fluffy", ((ENVCommand) result.getListOfCommand().get(3)).getEnvKeyValues().get(0).getValue());
+        assertEquals("John Doe", ((ENVCommand) result.getActions().get(0)).getEnvKeyValues().get(0).getValue());
+        assertEquals("Rex\\ The\\ Dog", ((ENVCommand) result.getActions().get(0)).getEnvKeyValues().get(1).getValue());
+        assertEquals("fluffy", ((ENVCommand) result.getActions().get(0)).getEnvKeyValues().get(2).getValue());
+        assertEquals("John Doe", ((ENVCommand) result.getActions().get(1)).getEnvKeyValues().get(0).getValue());
+        assertEquals("Rex The Dog", ((ENVCommand) result.getActions().get(2)).getEnvKeyValues().get(0).getValue());
+        assertEquals("fluffy", ((ENVCommand) result.getActions().get(3)).getEnvKeyValues().get(0).getValue());
     }
 
     @Test
@@ -136,7 +136,7 @@ public class DockerFileParserTest {
         File f = new File(DockerFileParserTest.class.getClassLoader().getResource("MultiLinesCMD").getPath());
         Dockerfile result = DockerFileParser.parse(f);
 
-        assertEquals(1, result.getListOfCommand().size());
+        assertEquals(1, result.getActions().size());
         assertEquals(1, result.howMuch(CMDCommand.class));
 
     }

@@ -1,7 +1,10 @@
 package fr.unice.i3s.sparks.docker.core.model.dockerfile;
 
+import fr.uca.i3s.sparks.composition.metamodel.Action;
 import fr.uca.i3s.sparks.composition.metamodel.Artefact;
 import fr.unice.i3s.sparks.docker.core.model.dockerfile.commands.Command;
+import fr.unice.i3s.sparks.docker.core.model.dockerfile.commands.RUNCommand;
+import fr.unice.i3s.sparks.docker.core.model.dockerfile.commands.ShellCommand;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +39,29 @@ public class Dockerfile extends Artefact<Command> {
     public Dockerfile(String absolutePath, Command... commands) {
         this(commands);
         sourceFile = absolutePath;
+    }
+
+    @Override
+    public int howMuch(Class<? extends Action> commandClass) {
+        if (ShellCommand.class.isAssignableFrom(commandClass)) {
+            return deepCount(commandClass);
+        } else {
+            return super.howMuch(commandClass);
+        }
+    }
+
+    private int deepCount(Class<? extends Action> commandClass) {
+        int result = 0;
+        List<RUNCommand> actionsOfType = getActionsOfType(RUNCommand.class);
+        for (RUNCommand runCommand : actionsOfType) {
+            List<ShellCommand> body = runCommand.getBody();
+            for (ShellCommand shellCommand : body) {
+                if (shellCommand.getClass().isAssignableFrom(commandClass)) {
+                    result++;
+                }
+            }
+        }
+        return result;
     }
 
     public String getSourceFile() {

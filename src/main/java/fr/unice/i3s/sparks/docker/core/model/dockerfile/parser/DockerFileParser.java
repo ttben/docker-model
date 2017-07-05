@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 public class DockerFileParser {
 
     public static Dockerfile parse(File file) throws IOException {
-        System.err.println("Handling file:" + file.getAbsolutePath());
+        //System.err.println("Handling file:" + file.getAbsolutePath());
         Path path = Paths.get(file.getAbsolutePath());
         Stream<String> fileLines = Files.lines(path);
         Collector<String, ?, ArrayList<String>> stringArrayListCollector = Collectors.toCollection(ArrayList::new);

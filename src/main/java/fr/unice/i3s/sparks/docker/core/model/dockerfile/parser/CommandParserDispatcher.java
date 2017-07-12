@@ -29,7 +29,15 @@ public class CommandParserDispatcher {
     private static final Pattern LABEL_PATTERN = Pattern.compile("[lL][aA][bB][eE][lL](\\s)+(.)+");
     private static final Pattern LABEL_PATTERN_MUTLILINE = Pattern.compile("[lL][aA][bB][eE][lL](\\s)+.*(\\\\)+\\s*");
 
-    private static final Pattern RUN_PATTERN_ONELINE = Pattern.compile("[rR][uU][nN](\\s)+.*[^\\\\]");
+    /* Fixme: the way we handle multi-line is WRONG. We have to make a difference between new lines
+       Fixme: like RUN apt-get install a \
+       Fixme:                           b, c
+       Fixme: and new lines like RUN apt-get install a \
+       Fixme:                       && echo 'done'
+       Fixme: the first one must produce a RUN command with ONE shell command which happens to be an APTINSTALL
+       Fixme: the second one must produce a RUN command with TWO shell commands and the first one happends to be an APTINSTALL
+     */
+    private static final Pattern RUN_PATTERN_ONELINE = Pattern.compile("[rR][uU][nN](\\s)+.*[^\\\\]+");
     private static final Pattern RUN_PATTERN_MUTLILINE = Pattern.compile("[rR][uU][nN](\\s)+.*(\\\\)+\\s*");
 
     public static CommandParser dispatch(String line) {

@@ -52,11 +52,20 @@ public class Dockerfile extends Artefact<Command> {
 
     private int deepCount(Class<? extends Action> commandClass) {
         int result = 0;
+
+        if (commandClass.equals(ShellCommand.class)) {
+            for (RUNCommand runCommand : getActionsOfType(RUNCommand.class)) {
+                List<ShellCommand> body = runCommand.getBody();
+                result += body.size();
+            }
+            return result;
+        }
+
         List<RUNCommand> actionsOfType = getActionsOfType(RUNCommand.class);
         for (RUNCommand runCommand : actionsOfType) {
             List<ShellCommand> body = runCommand.getBody();
             for (ShellCommand shellCommand : body) {
-                if (shellCommand.getClass().isAssignableFrom(commandClass)) {
+                if (shellCommand.getClass().isAssignableFrom(commandClass) && !shellCommand.getClass().equals(ShellCommand.class)) {
                     result++;
                 }
             }

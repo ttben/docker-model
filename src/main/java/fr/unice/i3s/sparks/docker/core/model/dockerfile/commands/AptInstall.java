@@ -12,4 +12,9 @@ public class AptInstall extends ShellCommand {
     public AptInstall(String... body) {
         super(Arrays.asList(body));
     }
+
+    @Override
+    public String toString() {
+        return "AptInstall:"+super.toString();
+    }
 }

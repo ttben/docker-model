@@ -39,9 +39,19 @@ public class RUNTest {
     }
 
     @Test
+    public void runWithFirstEmptyStatement() throws IOException {
+        File f = new File(RUNTest.class.getClassLoader().getResource("RUNEmptyFirstStatement").getPath());
+
+        Dockerfile result = DockerFileParser.parse(f);
+
+        assertEquals(1, result.getActions().size());
+        assertEquals(RUNCommand.class, result.getActions().get(0).getClass());
+    }
+
+    @Test
     public void simpleRunMultiLines() {
         Dockerfile result = new Dockerfile();
-        List<String> strings = Arrays.asList("RUN apt-get update \\\n&& apt-get install -y git wget rsync php5 php5-curl curl zip");
+        List<String> strings = Arrays.asList("RUN apt-get update \\","&& apt-get install -y git wget rsync php5 php5-curl curl zip");
 
         DockerFileParser.parseLines(strings, result);
 
@@ -53,7 +63,7 @@ public class RUNTest {
     @Test
     public void complexRunMultiLines() {
         Dockerfile result = new Dockerfile();
-        List<String> strings = Arrays.asList("RUN sed 's@session\\s*required\\s*pam_loginuid.so@session optional pam_loginuid.so@g'\\\n -i /etc/pam.d/sshd");
+        List<String> strings = Arrays.asList("RUN sed 's@session\\s*required\\s*pam_loginuid.so@session optional pam_loginuid.so@g'\\"," -i /etc/pam.d/sshd");
 
         DockerFileParser.parseLines(strings, result);
 
@@ -110,4 +120,6 @@ public class RUNTest {
         assertEquals(0, result.howMuch(CMDCommand.class));
         assertEquals(0, result.howMuch(ONBUILDCommand.class));
     }
+
+
 }

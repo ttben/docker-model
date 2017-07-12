@@ -6,7 +6,7 @@ public class NonParsedCommand extends Command {
     public NonParsedCommand(String s) {
 
         if(s.toLowerCase().startsWith("run")) {
-            System.err.println("PARSEDCOMMAND THAT CONTAINS RUN:" + s);
+            //System.err.println("PARSEDCOMMAND THAT CONTAINS RUN:" + s);
         }
 
         this.s = s;

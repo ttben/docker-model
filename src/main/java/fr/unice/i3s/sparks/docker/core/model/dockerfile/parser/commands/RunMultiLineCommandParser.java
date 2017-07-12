@@ -16,6 +16,22 @@ public class RunMultiLineCommandParser implements CommandParser {
 
     @Override
     public Command parse(Iterator<String> iterator, String currentLine) {
+
+        currentLine = currentLine.trim();
+
+        while(currentLine.startsWith("\t")) {
+            currentLine = currentLine.substring(1, currentLine.length());
+        }
+
+        if (currentLine.startsWith("\\")) {
+            currentLine = currentLine.substring(1, currentLine.length());
+        }
+
+        if (currentLine.endsWith("\\")) {
+            currentLine = currentLine.substring(0, currentLine.length()-1);
+        }
+        String completeFullLine  = currentLine;
+
         List<ShellCommand> shellCommands = buildRunCommand(currentLine, true);
         String line = iterator.next();
 
@@ -24,21 +40,52 @@ public class RunMultiLineCommandParser implements CommandParser {
                 line = iterator.next();
                 continue;
             }
+            line = line.trim();
+
+            while(line.startsWith("\t")) {
+                line = line.substring(1, line.length());
+            }
+
+            if (line.startsWith("\\")) {
+                line = line.substring(1, line.length());
+            }
+
+            if (line.endsWith("\\")) {
+                line = line.substring(0, line.length()-1);
+            }
+            completeFullLine += " "+ line;
+
             shellCommands.addAll(buildRunCommand(line, false));
             line = iterator.next();
         }
 
         if (RUN_END_MULTILINE.matcher(line).matches()) {
+            line = line.trim();
+
+            while(line.startsWith("\t")) {
+                line = line.substring(1, line.length());
+            }
+            if (line.startsWith("\\")) {
+                line = line.substring(1, line.length());
+            }
+
+            if (line.endsWith("\\")) {
+                line = line.substring(0, line.length()-1);
+            }
+            completeFullLine += " "+ line;
+
             shellCommands.addAll(buildRunCommand(line, false));
         }
-        return new RUNCommand(shellCommands);
+
+        Command parse = new RunOneLineCommandParser().parse(null, completeFullLine);
+
+        return parse;
     }
 
     private static List<ShellCommand> buildRunCommand(String line, boolean isFirstLineOfRun) {
 
         String[] split = null;
 
-        line = line.trim();
         if (isFirstLineOfRun) {
             line = line.substring(4);
         }
@@ -61,6 +108,8 @@ public class RunMultiLineCommandParser implements CommandParser {
             split = new String[1];
             split[0] = join;
 
+        } else if (line.isEmpty()) {
+            return new ArrayList<>();
         } else {
             split = line.split("&&");
         }

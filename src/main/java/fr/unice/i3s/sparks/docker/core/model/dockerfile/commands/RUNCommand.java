@@ -32,6 +32,21 @@ public class RUNCommand extends CompositeCommand {
     }
 
     @Override
+    public boolean containsTag(Class<? extends Tag> tag) {
+        if (super.containsTag(tag)) {
+            return true;
+        }
+
+        for (ShellCommand shellCommand : body) {
+            if (shellCommand.containsTag(tag)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("RUNCommand{");
         sb.append("body=").append(body);

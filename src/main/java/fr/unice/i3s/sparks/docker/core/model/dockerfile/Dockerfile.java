@@ -41,6 +41,16 @@ public class Dockerfile extends Artefact<Command> {
         sourceFile = absolutePath;
     }
 
+    //  todo push to the metamodel
+    public boolean containsTag(Class<? extends Tag> tag) {
+        for (Command a : actions) {
+            if (a.containsTag(tag)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public int howMuch(Class<? extends Action> commandClass) {
         if (ShellCommand.class.isAssignableFrom(commandClass)) {

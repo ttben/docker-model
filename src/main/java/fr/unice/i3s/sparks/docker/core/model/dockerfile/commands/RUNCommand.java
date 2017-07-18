@@ -1,5 +1,7 @@
 package fr.unice.i3s.sparks.docker.core.model.dockerfile.commands;
 
+import fr.unice.i3s.sparks.docker.core.model.dockerfile.Tag;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

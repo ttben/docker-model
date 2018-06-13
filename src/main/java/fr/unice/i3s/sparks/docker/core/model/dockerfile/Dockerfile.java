@@ -13,6 +13,7 @@ import java.util.List;
 public class Dockerfile extends Artefact<Command> {
     private String sourceFile;
 
+    private Dockerfile parent;
     public Dockerfile(){
         actions = new ArrayList<>();
     }
@@ -39,6 +40,14 @@ public class Dockerfile extends Artefact<Command> {
     public Dockerfile(String absolutePath, Command... commands) {
         this(commands);
         sourceFile = absolutePath;
+    }
+
+    public Dockerfile getParent() {
+        return parent;
+    }
+
+    public void setParent(Dockerfile parent) {
+        this.parent = parent;
     }
 
     //  todo push to the metamodel
